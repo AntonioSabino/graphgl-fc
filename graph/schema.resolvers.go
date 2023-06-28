@@ -10,6 +10,25 @@ import (
 	"github.com/AntonioSabino/graphgl-fc/graph/model"
 )
 
+// Courses is the resolver for the courses field.
+func (r *categoryResolver) Courses(ctx context.Context, obj *model.Category) ([]*model.Course, error) {
+	courses, err := r.CourseDB.FindCategoryByID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var gqlCourses []*model.Course
+	for _, course := range courses {
+		gqlCourses = append(gqlCourses, &model.Course{
+			ID:          course.ID,
+			Name:        course.Name,
+			Description: &course.Description,
+		})
+	}
+
+	return gqlCourses, nil
+}
+
 // AddCategory is the resolver for the addCategory field.
 func (r *mutationResolver) AddCategory(ctx context.Context, category model.NewCategory) (*model.Category, error) {
 	newCategory, err := r.CategoryDB.Create(category.Name, *category.Description)
@@ -76,11 +95,15 @@ func (r *queryResolver) Courses(ctx context.Context) ([]*model.Course, error) {
 	return gqlCourses, nil
 }
 
+// Category returns CategoryResolver implementation.
+func (r *Resolver) Category() CategoryResolver { return &categoryResolver{r} }
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+type categoryResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
