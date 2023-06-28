@@ -13,7 +13,16 @@ import (
 
 // AddCategory is the resolver for the addCategory field.
 func (r *mutationResolver) AddCategory(ctx context.Context, category model.NewCategory) (*model.Category, error) {
-	panic(fmt.Errorf("not implemented: AddCategory - addCategory"))
+	newCategory, err := r.CategoryDB.Create(category.Name, *category.Description)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Category{
+		ID:          newCategory.ID,
+		Name:        newCategory.Name,
+		Description: &newCategory.Description,
+	}, nil
 }
 
 // AddCourse is the resolver for the addCourse field.
